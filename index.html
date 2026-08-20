@@ -1182,7 +1182,6 @@ body {
 <div class="detail-page" id="detailPage">
   <div class="detail-header">
     <button class="back-btn" onclick="closeDetail()">← 返回</button>
-    <button class="edit-btn" id="detailEditBtn">编辑</button>
   </div>
   <div id="detailContent"></div>
 </div>
@@ -1792,13 +1791,9 @@ function openDetail(id) {
     html += `<div class="detail-section"><h3>备注</h3><p style="font-size:14px; line-height:1.6; color:var(--text)">${a.notes}</p></div>`;
   }
 
-  html += `
-    <button class="btn btn-outline" onclick="openEditModal(appliances.find(x=>x.id==='${a.id}'))">编辑</button>
-  `;
   html += `</div>`;
 
   document.getElementById('detailContent').innerHTML = html;
-  document.getElementById('detailEditBtn').onclick = () => openEditModal(a);
   document.getElementById('detailPage').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
