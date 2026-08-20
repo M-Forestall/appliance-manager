@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="家电管家">
+<meta name="theme-color" content="#5B7B6F">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235B7B6F'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white'>🏠</text></svg>">
+<link rel="manifest" href="manifest.json">
+<title>家电管家</title>
+<style>
+:root {
+  --primary: #5B7B6F;
+  --primary-light: #7A9E8E;
+  --primary-dark: #3D5A4E;
+  --accent: #C4A882;
+  --accent-light: #E8D5BC;
+  --bg: #F5F1EC;
+  --card-bg: #FFFFFF;
+  --text: #2D3436;
+  --text-secondary: #636E72;
+  --text-light: #B2BEC3;
+  --border: #E8E0D8;
+  --danger: #E17055;
+  --danger-light: #FAB1A0;
+  --success: #00B894;
+  --warning: #FDCB6E;
+  --shadow: 0 2px 12px rgba(91,123,111,0.08);
+  --shadow-lg: 0 8px 32px rgba(91,123,111,0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --safe-top: env(safe-area-inset-top, 20px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Auth Pages ===== */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  padding-top: calc(var(--safe-top) + 40px);
+  padding-bottom: var(--safe-bottom);
+  background: linear-gradient(160deg, #F5F1EC 0%, #E8E0D8 50%, #D4C8BC 100%);
+}
+.auth-page.hidden { display: none; }
+
+.auth-logo {
+  font-size: 56px;
+  margin-bottom: 8px;
+}
+.auth-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 4px;
+}
+.auth-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-tabs {
+  display: flex;
+  margin-bottom: 24px;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 3px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border: none;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.auth-tab.active {
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.auth-form { display: none; }
+.auth-form.active { display: block; }
+
+.auth-input-group {
+  margin-bottom: 16px;
+}
+.auth-input-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.auth-input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.auth-input:focus { border-color: var(--primary); background: var(--card-bg); }
+.auth-input::placeholder { color: var(--text-light); }
+
+.auth-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.2s, transform 0.1s;
+  font-family: inherit;
+}
+.auth-btn:active { transform: scale(0.98); opacity: 0.9; }
+.auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-error {
+  background: #FFF0ED;
+  color: var(--danger);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: none;
+}
+.auth-error.show { display: block; }
+
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+/* ===== Main App ===== */
+.app-container { display: none; }
+.app-container.show { display: block; }
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(245,241,236,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 12px 20px;
+  padding-top: calc(var(--safe-top) + 12px);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  letter-spacing: -0.5px;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-user {
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--card-bg);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+.header-stats {
+  font-size: 13px;
+  background: var(--primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+/* ===== Search Bar ===== */
+.search-bar {
+  margin: 0 20px 16px;
+  position: relative;
+}
+.search-bar input {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  background: var(--card-bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-bar input:focus { border-color: var(--primary); }
+.search-bar input::placeholder { color: var(--text-light); }
+.search-bar .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  opacity: 0.4;
+}
+
+/* ===== Filter Tabs ===== */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-tabs::-webkit-scrollbar { display: none; }
+.filter-tab {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-tab.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ===== Appliance List ===== */
+.appliance-list {
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: calc(90px + var(--safe-bottom));
+}
+.appliance-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.appliance-card:active { transform: scale(0.98); }
+.appliance-card .card-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg);
+}
+.appliance-card .card-photo-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+.card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.card-info .card-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-info .card-model {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-info .card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+.card-info .card-price {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.warranty-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.warranty-active { background: #E8F8F0; color: var(--success); }
+.warranty-expired { background: #FFF0ED; color: var(--danger); }
+.warranty-warning { background: #FFF8E1; color: #F39C12; }
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 40px;
+}
+.empty-state .empty-icon { font-size: 64px; margin-bottom: 16px; }
+.empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+.empty-state p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ===== FAB ===== */
+.fab {
+  position: fixed;
+  right: 24px;
+  bottom: calc(80px + var(--safe-bottom));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(91,123,111,0.35);
+  cursor: pointer;
+  z-index: 90;
+  transition: transform 0.2s;
+}
+.fab:active { transform: scale(0.9); }
+.fab.hidden { display: none; }
+
+/* ===== Bottom Nav ===== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  padding-bottom: calc(8px + var(--safe-bottom));
+  z-index: 100;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: color 0.2s;
+  font-family: inherit;
+}
+.nav-item.active { color: var(--primary); }
+.nav-item .nav-icon { font-size: 22px; }
+.nav-item .nav-label { font-size: 11px; font-weight: 500; }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+.modal-overlay.show { opacity: 1; visibility: visible; }
+
+.modal-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 92vh;
+  background: var(--bg);
+  border-radius: 20px 20px 0 0;
+  z-index: 201;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--safe-bottom);
+}
+.modal-sheet.show { transform: translateY(0); }
+
+.modal-handle {
+  width: 36px;
+  height: 5px;
+  background: var(--text-light);
+  border-radius: 3px;
+  margin: 10px auto 0;
+  opacity: 0.4;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--border);
+  border: none;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+.modal-body { padding: 0 20px 30px; }
+
+/* ===== Form ===== */
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  background: var(--card-bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.form-input:focus { border-color: var(--primary); }
+.form-input::placeholder { color: var(--text-light); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ===== Upload Area ===== */
+.upload-area {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: var(--card-bg);
+}
+.upload-area:active {
+  border-color: var(--primary);
+  background: rgba(91,123,111,0.04);
+}
+.upload-area .upload-icon { font-size: 28px; margin-bottom: 6px; }
+.upload-area .upload-text { font-size: 13px; color: var(--text-secondary); }
+.upload-area .upload-hint { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+.upload-preview {
+  position: relative;
+  display: inline-block;
+  margin: 6px;
+}
+.upload-preview img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+}
+.upload-preview .remove-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: white;
+  border: 2px solid white;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+.upload-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+.file-preview .file-icon { font-size: 20px; }
+.file-preview .file-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-preview .remove-file {
+  color: var(--danger);
+  border: none;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  font-family: inherit;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--primary); color: white; }
+.btn-danger { background: var(--danger); color: white; margin-top: 10px; }
+.btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); margin-top: 10px; }
+
+/* ===== Detail View ===== */
+.detail-page {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(30px + var(--safe-bottom));
+}
+.detail-page.show { transform: translateX(0); }
+
+.detail-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  padding-top: calc(var(--safe-top) + 12px);
+  background: rgba(245,241,236,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.detail-header .back-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.detail-header .edit-btn {
+  border: none;
+  background: none;
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 6px 12px;
+}
+
+.detail-photo {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+}
+.detail-photo-placeholder {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 72px;
+}
+
+.detail-content { padding: 20px; }
+
+.detail-section {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.detail-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-row .label { font-size: 14px; color: var(--text-secondary); }
+.detail-row .value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: right;
+  max-width: 60%;
+  word-break: break-all;
+}
+
+.detail-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.detail-images img, .detail-images .file-link {
+  width: calc(33.33% - 6px);
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.detail-images .file-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  font-size: 12px;
+  color: var(--text-secondary);
+  gap: 4px;
+  text-decoration: none;
+  border: 1.5px solid var(--border);
+}
+.detail-images .file-link .file-link-icon { font-size: 24px; }
+
+/* ===== Image Viewer ===== */
+.image-viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+.image-viewer.show { opacity: 1; visibility: visible; }
+.image-viewer img {
+  max-width: 95%;
+  max-height: 90vh;
+  object-fit: contain;
+}
+.image-viewer .close-viewer {
+  position: absolute;
+  top: calc(var(--safe-top) + 16px);
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Stats Page ===== */
+.stats-page-inner { padding: 20px; padding-bottom: calc(90px + var(--safe-bottom)); }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--primary); }
+.stat-card .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+.warranty-list { margin-top: 16px; }
+.warranty-list h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+.warranty-item {
+  background: var(--card-bg);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow);
+}
+.warranty-item .wi-name { font-size: 14px; font-weight: 500; }
+.warranty-item .wi-info { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  top: calc(var(--safe-top) + 60px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: var(--text);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 500;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== Confirm Dialog ===== */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+.confirm-overlay.show { opacity: 1; visibility: visible; }
+.confirm-box {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 280px;
+  text-align: center;
+}
+.confirm-box h3 { font-size: 17px; margin-bottom: 8px; }
+.confirm-box p { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-actions button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.confirm-cancel { background: var(--bg); color: var(--text); }
+.confirm-delete { background: var(--danger); color: white; }
+
+/* ===== Page containers ===== */
+.page { display: none; }
+.page.show { display: block; }
+
+/* ===== Settings ===== */
+.settings-inner { padding: 20px; padding-bottom: calc(90px + var(--safe-bottom)); }
+
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.appliance-card { animation: fadeInUp 0.3s ease-out; }
+
+::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3 id="confirmTitle">确认删除</h3>
+    <p id="confirmMsg">确定要删除这个家电记录吗？此操作不可恢复。</p>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="hideConfirm()">取消</button>
+      <button class="confirm-delete" id="confirmBtn">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Viewer -->
+<div class="image-viewer" id="imageViewer" onclick="closeImageViewer()">
+  <button class="close-viewer">✕</button>
+  <img id="viewerImage" src="">
+</div>
+
+<!-- ===== AUTH PAGE ===== -->
+<div class="auth-page" id="authPage">
+  <div class="auth-logo">🏠</div>
+  <div class="auth-title">家电管家</div>
+  <div class="auth-subtitle">记录和管理你的家电信息</div>
+
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login', this)">登录</button>
+      <button class="auth-tab" onclick="switchAuthTab('register', this)">注册</button>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-form active" id="loginForm">
+      <div class="auth-error" id="loginError"></div>
+      <div class="auth-input-group">
+        <label>用户名</label>
+        <input type="text" class="auth-input" id="loginUsername" placeholder="请输入用户名" autocomplete="username">
+      </div>
+      <div class="auth-input-group">
+        <label>密码</label>
+        <input type="password" class="auth-input" id="loginPassword" placeholder="请输入密码" autocomplete="current-password">
+      </div>
+      <button class="auth-btn" onclick="doLogin()">登录</button>
+    </div>
+
+    <!-- Register Form -->
+    <div class="auth-form" id="registerForm">
+      <div class="auth-error" id="registerError"></div>
+      <div class="auth-input-group">
+        <label>用户名</label>
+        <input type="text" class="auth-input" id="regUsername" placeholder="3-20位字符" autocomplete="off">
+      </div>
+      <div class="auth-input-group">
+        <label>密码</label>
+        <input type="password" class="auth-input" id="regPassword" placeholder="至少6位" autocomplete="new-password">
+      </div>
+      <div class="auth-input-group">
+        <label>确认密码</label>
+        <input type="password" class="auth-input" id="regPassword2" placeholder="再次输入密码" autocomplete="new-password">
+      </div>
+      <button class="auth-btn" onclick="doRegister()">注册</button>
+    </div>
+
+    <div class="auth-footer">
+      数据存储在您的设备本地<br>请牢记账号密码
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div class="app-container" id="appContainer">
+
+  <!-- HOME PAGE -->
+  <div class="page show" id="homePage">
+    <div class="header">
+      <div class="header-inner">
+        <h1>🏠 家电管家</h1>
+        <div class="header-right">
+          <span class="header-stats" id="statsBadge">0 件</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="搜索品牌、型号..." oninput="renderList()">
+    </div>
+
+    <div class="filter-tabs" id="filterTabs">
+      <div class="filter-tab active" data-filter="all" onclick="setFilter('all', this)">全部</div>
+      <div class="filter-tab" data-filter="active" onclick="setFilter('active', this)">保修中</div>
+      <div class="filter-tab" data-filter="expiring" onclick="setFilter('expiring', this)">即将到期</div>
+      <div class="filter-tab" data-filter="expired" onclick="setFilter('expired', this)">已过保</div>
+    </div>
+
+    <div class="appliance-list" id="applianceList"></div>
+  </div>
+
+  <!-- STATS PAGE -->
+  <div class="page" id="statsPage">
+    <div class="header">
+      <div class="header-inner">
+        <h1>📊 统计概览</h1>
+      </div>
+    </div>
+    <div class="stats-page-inner" id="statsContent"></div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page" id="settingsPage">
+    <div class="header">
+      <div class="header-inner">
+        <h1>⚙️ 设置</h1>
+      </div>
+    </div>
+    <div class="settings-inner">
+      <div class="detail-section">
+        <h3>账号信息</h3>
+        <div class="detail-row">
+          <span class="label">当前用户</span>
+          <span class="value" id="currentUserDisplay"></span>
+        </div>
+        <button class="btn btn-outline" onclick="doLogout()" style="margin-top:12px">退出登录</button>
+      </div>
+      <div class="detail-section">
+        <h3>数据管理</h3>
+        <button class="btn btn-outline" onclick="exportData()" style="margin-top:0">📤 导出数据</button>
+        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" style="margin-top:10px">📥 导入数据</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+      <div class="detail-section">
+        <h3>关于</h3>
+        <div class="detail-row"><span class="label">版本</span><span class="value">1.1.0</span></div>
+        <div class="detail-row"><span class="label">存储方式</span><span class="value">本地 IndexedDB</span></div>
+      </div>
+      <div class="detail-section">
+        <h3>使用提示</h3>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.8;">
+          💡 在 Safari 中打开此页面，点击分享按钮，选择"添加到主屏幕"，即可获得类似原生 APP 的体验。<br><br>
+          📸 所有照片和文件均存储在您的设备本地，不会上传到任何服务器。<br><br>
+          🔄 建议定期使用"导出数据"功能备份数据。清除浏览器数据会导致账号和记录丢失。<br><br>
+          🔑 请牢记您的账号密码，密码无法找回。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" id="fabBtn" onclick="openAddModal()">＋</button>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="switchPage('home', this)">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">首页</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('stats', this)">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">统计</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('settings', this)">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">设置</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== ADD/EDIT MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+<div class="modal-sheet" id="modalSheet">
+  <div class="modal-handle"></div>
+  <div class="modal-header">
+    <h2 id="modalTitle">添加家电</h2>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <form id="applianceForm" onsubmit="saveAppliance(event)">
+      <input type="hidden" id="editId">
+
+      <div class="form-group">
+        <label class="form-label">家电照片</label>
+        <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">点击拍照或选择照片</div>
+          <div class="upload-hint">支持 JPG、PNG 格式</div>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoUpload(event)" multiple>
+        <div class="upload-previews" id="photoPreviews"></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">品牌</label>
+          <input type="text" class="form-input" id="brand" placeholder="如：海尔" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">型号</label>
+          <input type="text" class="form-input" id="model" placeholder="如：BCD-500">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">家电名称</label>
+        <input type="text" class="form-input" id="name" placeholder="如：客厅冰箱" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">类别</label>
+        <select class="form-input" id="category">
+          <option value="大家电">大家电</option>
+          <option value="厨房电器">厨房电器</option>
+          <option value="生活电器">生活电器</option>
+          <option value="数码产品">数码产品</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">购买时间</label>
+          <input type="date" class="form-input" id="purchaseDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">价格 (元)</label>
+          <input type="number" class="form-input" id="price" placeholder="0.00" step="0.01" min="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">质保期限</label>
+        <div class="form-row">
+          <input type="number" class="form-input" id="warrantyYears" placeholder="年" min="0">
+          <input type="number" class="form-input" id="warrantyMonths" placeholder="月" min="0" max="11">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">购买渠道</label>
+        <input type="text" class="form-input" id="channel" placeholder="如：京东、天猫、线下门店">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">购买发票</label>
+        <div class="upload-area" onclick="document.getElementById('invoiceInput').click()">
+          <div class="upload-icon">🧾</div>
+          <div class="upload-text">点击上传发票照片或文件</div>
+          <div class="upload-hint">支持拍照、图片、PDF 等格式</div>
+        </div>
+        <input type="file" id="invoiceInput" accept="image/*,application/pdf,.pdf" capture="environment" style="display:none" onchange="handleInvoiceUpload(event)" multiple>
+        <div class="upload-previews" id="invoicePreviews"></div>
+        <div id="invoiceFiles"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">说明书</label>
+        <div class="upload-area" onclick="document.getElementById('manualInput').click()">
+          <div class="upload-icon">📖</div>
+          <div class="upload-text">点击拍照扫描或选择文件</div>
+          <div class="upload-hint">支持拍照扫描、图片、PDF 等格式</div>
+        </div>
+        <input type="file" id="manualInput" accept="image/*,application/pdf,.pdf" capture="environment" style="display:none" onchange="handleManualUpload(event)" multiple>
+        <div class="upload-previews" id="manualPreviews"></div>
+        <div id="manualFiles"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-input" id="notes" rows="3" placeholder="其他需要记录的信息..." style="resize:none;"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary">保存</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== DETAIL PAGE ===== -->
+<div class="detail-page" id="detailPage">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">← 返回</button>
+    <button class="edit-btn" id="detailEditBtn">编辑</button>
+  </div>
+  <div id="detailContent"></div>
+</div>
+
+<script>
+// ===== Database =====
+const DB_NAME = 'ApplianceManager';
+const DB_VERSION = 2;
+const STORE_USERS = 'users';
+const STORE_APPLIANCES = 'appliances';
+let db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (e) => {
+      const database = e.target.result;
+      if (!database.objectStoreNames.contains(STORE_USERS)) {
+        const userStore = database.createObjectStore(STORE_USERS, { keyPath: 'id' });
+        userStore.createIndex('username', 'username', { unique: true });
+      }
+      if (!database.objectStoreNames.contains(STORE_APPLIANCES)) {
+        const appStore = database.createObjectStore(STORE_APPLIANCES, { keyPath: 'id' });
+        appStore.createIndex('userId', 'userId', { unique: false });
+        appStore.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+    };
+    request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    request.onerror = (e) => reject(e.target.error);
+  });
+}
+
+// User operations
+function dbAddUser(user) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_USERS, 'readwrite');
+    tx.objectStore(STORE_USERS).add(user);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbFindUser(username) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_USERS, 'readonly');
+    const index = tx.objectStore(STORE_USERS).index('username');
+    const request = index.get(username);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = (e) => reject(e.target.error);
+  });
+}
+
+// Appliance operations (scoped to userId)
+function dbAddAppliance(item) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_APPLIANCES, 'readwrite');
+    tx.objectStore(STORE_APPLIANCES).put(item);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbGetUserAppliances(userId) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_APPLIANCES, 'readonly');
+    const index = tx.objectStore(STORE_APPLIANCES).index('userId');
+    const request = index.getAll(userId);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbDeleteAppliance(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_APPLIANCES, 'readwrite');
+    tx.objectStore(STORE_APPLIANCES).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+// ===== Password Hashing =====
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + '_appliance_salt_2026');
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ===== Session =====
+const SESSION_KEY = 'appliance_current_user';
+
+function getSession() {
+  try {
+    const s = localStorage.getItem(SESSION_KEY);
+    return s ? JSON.parse(s) : null;
+  } catch { return null; }
+}
+
+function setSession(user) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ id: user.id, username: user.username }));
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+// ===== State =====
+let currentUser = null;
+let appliances = [];
+let currentFilter = 'all';
+let tempPhotos = [];
+let tempInvoices = [];
+let tempManuals = [];
+
+// ===== Utility =====
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '未填写';
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getWarrantyStatus(a) {
+  if (!a.purchaseDate || (!a.warrantyYears && !a.warrantyMonths)) {
+    return { status: 'unknown', text: '未设置质保', class: '', daysLeft: 9999 };
+  }
+  const purchase = new Date(a.purchaseDate);
+  const years = a.warrantyYears || 0;
+  const months = a.warrantyMonths || 0;
+  const expiry = new Date(purchase);
+  expiry.setFullYear(expiry.getFullYear() + years);
+  expiry.setMonth(expiry.getMonth() + months);
+  const now = new Date();
+  const daysLeft = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+  if (daysLeft < 0) return { status: 'expired', text: '已过保', class: 'warranty-expired', daysLeft };
+  if (daysLeft <= 30) return { status: 'expiring', text: `${daysLeft}天后到期`, class: 'warranty-warning', daysLeft };
+  return { status: 'active', text: `保修中 (${daysLeft}天)`, class: 'warranty-active', daysLeft };
+}
+
+function getWarrantyExpiry(a) {
+  if (!a.purchaseDate || (!a.warrantyYears && !a.warrantyMonths)) return null;
+  const purchase = new Date(a.purchaseDate);
+  const expiry = new Date(purchase);
+  expiry.setFullYear(expiry.getFullYear() + (a.warrantyYears || 0));
+  expiry.setMonth(expiry.getMonth() + (a.warrantyMonths || 0));
+  return expiry;
+}
+
+function getCategoryIcon(category) {
+  const icons = { '大家电': '🏠', '厨房电器': '🍳', '生活电器': '💨', '数码产品': '📱', '其他': '📦' };
+  return icons[category] || '📦';
+}
+
+// ===== Auth =====
+function switchAuthTab(tab, el) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+  document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+  document.getElementById('loginError').classList.remove('show');
+  document.getElementById('registerError').classList.remove('show');
+}
+
+function showAuthError(formId, msg) {
+  const el = document.getElementById(formId);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function doRegister() {
+  const username = document.getElementById('regUsername').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const password2 = document.getElementById('regPassword2').value;
+
+  if (!username) return showAuthError('registerError', '请输入用户名');
+  if (username.length < 3 || username.length > 20) return showAuthError('registerError', '用户名需要3-20位字符');
+  if (!password) return showAuthError('registerError', '请输入密码');
+  if (password.length < 6) return showAuthError('registerError', '密码至少6位');
+  if (password !== password2) return showAuthError('registerError', '两次输入的密码不一致');
+
+  const existing = await dbFindUser(username);
+  if (existing) return showAuthError('registerError', '该用户名已被注册');
+
+  const hashedPassword = await hashPassword(password);
+  const user = {
+    id: uuid(),
+    username,
+    password: hashedPassword,
+    createdAt: Date.now()
+  };
+
+  await dbAddUser(user);
+  setSession(user);
+  currentUser = user;
+  enterApp();
+  showToast('注册成功，欢迎使用 ✓');
+}
+
+async function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!username) return showAuthError('loginError', '请输入用户名');
+  if (!password) return showAuthError('loginError', '请输入密码');
+
+  const user = await dbFindUser(username);
+  if (!user) return showAuthError('loginError', '用户名或密码错误');
+
+  const hashedPassword = await hashPassword(password);
+  if (user.password !== hashedPassword) return showAuthError('loginError', '用户名或密码错误');
+
+  setSession(user);
+  currentUser = user;
+  enterApp();
+  showToast(`欢迎回来，${user.username} ✓`);
+}
+
+function doLogout() {
+  clearSession();
+  currentUser = null;
+  appliances = [];
+  document.getElementById('appContainer').classList.remove('show');
+  document.getElementById('authPage').classList.remove('hidden');
+  // Reset forms
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('regUsername').value = '';
+  document.getElementById('regPassword').value = '';
+  document.getElementById('regPassword2').value = '';
+  document.getElementById('loginError').classList.remove('show');
+  document.getElementById('registerError').classList.remove('show');
+  // Reset to home
+  switchPage('home', document.querySelector('.nav-item'));
+}
+
+function enterApp() {
+  document.getElementById('authPage').classList.add('hidden');
+  document.getElementById('appContainer').classList.add('show');
+  document.getElementById('currentUserDisplay').textContent = currentUser.username;
+  loadData();
+}
+
+// ===== File Handling =====
+function compressImage(file, maxWidth = 1200, quality = 0.7) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = h * maxWidth / w; w = maxWidth; }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handlePhotoUpload(event) {
+  const files = Array.from(event.target.files);
+  for (const file of files) {
+    if (file.type.startsWith('image/')) {
+      const compressed = await compressImage(file);
+      tempPhotos.push(compressed);
+    }
+  }
+  renderPhotoPreviews();
+  event.target.value = '';
+}
+
+async function handleInvoiceUpload(event) {
+  const files = Array.from(event.target.files);
+  for (const file of files) {
+    if (file.type === 'application/pdf') {
+      const base64 = await fileToBase64(file);
+      tempInvoices.push({ type: 'pdf', name: file.name, data: base64 });
+    } else if (file.type.startsWith('image/')) {
+      const compressed = await compressImage(file);
+      tempInvoices.push({ type: 'image', name: file.name, data: compressed });
+    }
+  }
+  renderInvoicePreviews();
+  event.target.value = '';
+}
+
+async function handleManualUpload(event) {
+  const files = Array.from(event.target.files);
+  for (const file of files) {
+    if (file.type === 'application/pdf') {
+      const base64 = await fileToBase64(file);
+      tempManuals.push({ type: 'pdf', name: file.name, data: base64 });
+    } else if (file.type.startsWith('image/')) {
+      const compressed = await compressImage(file);
+      tempManuals.push({ type: 'image', name: file.name, data: compressed });
+    }
+  }
+  renderManualPreviews();
+  event.target.value = '';
+}
+
+function renderPhotoPreviews() {
+  document.getElementById('photoPreviews').innerHTML = tempPhotos.map((p, i) => `
+    <div class="upload-preview">
+      <img src="${p}" onclick="viewImage('${p}')">
+      <button class="remove-btn" onclick="removePhoto(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function renderInvoicePreviews() {
+  const container = document.getElementById('invoicePreviews');
+  const filesContainer = document.getElementById('invoiceFiles');
+  const images = tempInvoices.filter(f => f.type === 'image');
+  const pdfs = tempInvoices.filter(f => f.type === 'pdf');
+  container.innerHTML = images.map((f) => `
+    <div class="upload-preview">
+      <img src="${f.data}" onclick="viewImage('${f.data}')">
+      <button class="remove-btn" onclick="removeInvoice(${tempInvoices.indexOf(f)})">✕</button>
+    </div>
+  `).join('');
+  filesContainer.innerHTML = pdfs.map((f) => `
+    <div class="file-preview">
+      <span class="file-icon">📄</span>
+      <span class="file-name">${f.name}</span>
+      <button class="remove-file" onclick="removeInvoice(${tempInvoices.indexOf(f)})">✕</button>
+    </div>
+  `).join('');
+}
+
+function renderManualPreviews() {
+  const container = document.getElementById('manualPreviews');
+  const filesContainer = document.getElementById('manualFiles');
+  const images = tempManuals.filter(f => f.type === 'image');
+  const pdfs = tempManuals.filter(f => f.type === 'pdf');
+  container.innerHTML = images.map((f) => `
+    <div class="upload-preview">
+      <img src="${f.data}" onclick="viewImage('${f.data}')">
+      <button class="remove-btn" onclick="removeManual(${tempManuals.indexOf(f)})">✕</button>
+    </div>
+  `).join('');
+  filesContainer.innerHTML = pdfs.map((f) => `
+    <div class="file-preview">
+      <span class="file-icon">📄</span>
+      <span class="file-name">${f.name}</span>
+      <button class="remove-file" onclick="removeManual(${tempManuals.indexOf(f)})">✕</button>
+    </div>
+  `).join('');
+}
+
+function removePhoto(i) { tempPhotos.splice(i, 1); renderPhotoPreviews(); }
+function removeInvoice(i) { tempInvoices.splice(i, 1); renderInvoicePreviews(); }
+function removeManual(i) { tempManuals.splice(i, 1); renderManualPreviews(); }
+
+// ===== Modal =====
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = '添加家电';
+  document.getElementById('editId').value = '';
+  document.getElementById('applianceForm').reset();
+  tempPhotos = []; tempInvoices = []; tempManuals = [];
+  renderPhotoPreviews(); renderInvoicePreviews(); renderManualPreviews();
+  showModal();
+}
+
+function openEditModal(appliance) {
+  document.getElementById('modalTitle').textContent = '编辑家电';
+  document.getElementById('editId').value = appliance.id;
+  document.getElementById('brand').value = appliance.brand || '';
+  document.getElementById('model').value = appliance.model || '';
+  document.getElementById('name').value = appliance.name || '';
+  document.getElementById('category').value = appliance.category || '大家电';
+  document.getElementById('purchaseDate').value = appliance.purchaseDate || '';
+  document.getElementById('price').value = appliance.price || '';
+  document.getElementById('warrantyYears').value = appliance.warrantyYears || '';
+  document.getElementById('warrantyMonths').value = appliance.warrantyMonths || '';
+  document.getElementById('channel').value = appliance.channel || '';
+  document.getElementById('notes').value = appliance.notes || '';
+  tempPhotos = [...(appliance.photos || [])];
+  tempInvoices = [...(appliance.invoices || [])];
+  tempManuals = [...(appliance.manuals || [])];
+  renderPhotoPreviews(); renderInvoicePreviews(); renderManualPreviews();
+  showModal();
+}
+
+function showModal() {
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('modalSheet').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.getElementById('modalSheet').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ===== Save =====
+async function saveAppliance(event) {
+  event.preventDefault();
+  const editId = document.getElementById('editId').value;
+  const data = {
+    id: editId || uuid(),
+    userId: currentUser.id,
+    brand: document.getElementById('brand').value.trim(),
+    model: document.getElementById('model').value.trim(),
+    name: document.getElementById('name').value.trim(),
+    category: document.getElementById('category').value,
+    purchaseDate: document.getElementById('purchaseDate').value,
+    price: parseFloat(document.getElementById('price').value) || 0,
+    warrantyYears: parseInt(document.getElementById('warrantyYears').value) || 0,
+    warrantyMonths: parseInt(document.getElementById('warrantyMonths').value) || 0,
+    channel: document.getElementById('channel').value.trim(),
+    notes: document.getElementById('notes').value.trim(),
+    photos: [...tempPhotos],
+    invoices: [...tempInvoices],
+    manuals: [...tempManuals],
+    createdAt: editId ? (appliances.find(a => a.id === editId)?.createdAt || Date.now()) : Date.now(),
+    updatedAt: Date.now()
+  };
+  await dbAddAppliance(data);
+  await loadData();
+  closeModal();
+  showToast(editId ? '修改成功 ✓' : '添加成功 ✓');
+}
+
+// ===== Delete =====
+let pendingDeleteId = null;
+function confirmDelete(id) {
+  pendingDeleteId = id;
+  document.getElementById('confirmOverlay').classList.add('show');
+  document.getElementById('confirmBtn').onclick = async () => {
+    await dbDeleteAppliance(pendingDeleteId);
+    await loadData();
+    hideConfirm();
+    closeDetail();
+    showToast('已删除');
+  };
+}
+function hideConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('show');
+  pendingDeleteId = null;
+}
+
+// ===== Render =====
+async function loadData() {
+  appliances = await dbGetUserAppliances(currentUser.id);
+  appliances.sort((a, b) => b.createdAt - a.createdAt);
+  renderList();
+  renderStats();
+}
+
+function renderList() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = appliances.filter(a => {
+    const matchSearch = !search ||
+      a.name.toLowerCase().includes(search) ||
+      a.brand.toLowerCase().includes(search) ||
+      (a.model && a.model.toLowerCase().includes(search)) ||
+      (a.category && a.category.toLowerCase().includes(search));
+    if (!matchSearch) return false;
+    if (currentFilter === 'all') return true;
+    const ws = getWarrantyStatus(a);
+    if (currentFilter === 'active') return ws.status === 'active';
+    if (currentFilter === 'expiring') return ws.status === 'expiring';
+    if (currentFilter === 'expired') return ws.status === 'expired';
+    return true;
+  });
+
+  const container = document.getElementById('applianceList');
+  document.getElementById('statsBadge').textContent = `${appliances.length} 件`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${search ? '🔍' : '📦'}</div>
+        <h3>${search ? '没有找到匹配的结果' : '还没有添加家电'}</h3>
+        <p>${search ? '试试其他关键词' : '点击右下角 ＋ 按钮<br>开始记录你的第一件家电'}</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(a => {
+    const ws = getWarrantyStatus(a);
+    const photo = a.photos && a.photos.length > 0 ? a.photos[0] : null;
+    return `
+      <div class="appliance-card" onclick="openDetail('${a.id}')">
+        ${photo
+          ? `<img class="card-photo" src="${photo}">`
+          : `<div class="card-photo-placeholder">${getCategoryIcon(a.category)}</div>`
+        }
+        <div class="card-info">
+          <div class="card-name">${a.brand} ${a.name}</div>
+          <div class="card-model">${a.model || a.category}${a.channel ? ' · ' + a.channel : ''}</div>
+          <div class="card-meta">
+            ${a.price ? `<span class="card-price">¥${a.price.toLocaleString()}</span>` : ''}
+            <span class="warranty-badge ${ws.class}">${ws.text}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setFilter(filter, el) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+// ===== Detail =====
+function openDetail(id) {
+  const a = appliances.find(x => x.id === id);
+  if (!a) return;
+  const ws = getWarrantyStatus(a);
+  const expiry = getWarrantyExpiry(a);
+  const photo = a.photos && a.photos.length > 0 ? a.photos[0] : null;
+
+  let html = '';
+  if (photo) {
+    html += `<img class="detail-photo" src="${photo}" onclick="viewImage('${photo}')">`;
+  } else {
+    html += `<div class="detail-photo-placeholder">${getCategoryIcon(a.category)}</div>`;
+  }
+
+  html += `<div class="detail-content">`;
+  html += `
+    <div class="detail-section">
+      <h3>基本信息</h3>
+      <div class="detail-row"><span class="label">名称</span><span class="value">${a.name}</span></div>
+      <div class="detail-row"><span class="label">品牌</span><span class="value">${a.brand}</span></div>
+      ${a.model ? `<div class="detail-row"><span class="label">型号</span><span class="value">${a.model}</span></div>` : ''}
+      <div class="detail-row"><span class="label">类别</span><span class="value">${a.category}</span></div>
+      ${a.channel ? `<div class="detail-row"><span class="label">购买渠道</span><span class="value">${a.channel}</span></div>` : ''}
+    </div>
+  `;
+  html += `
+    <div class="detail-section">
+      <h3>购买与质保</h3>
+      <div class="detail-row"><span class="label">购买时间</span><span class="value">${formatDate(a.purchaseDate)}</span></div>
+      ${a.price ? `<div class="detail-row"><span class="label">价格</span><span class="value" style="color:var(--accent);font-weight:600">¥${a.price.toLocaleString()}</span></div>` : ''}
+      <div class="detail-row">
+        <span class="label">质保期限</span>
+        <span class="value">${a.warrantyYears ? a.warrantyYears + '年' : ''}${a.warrantyMonths ? a.warrantyMonths + '个月' : ''}${!a.warrantyYears && !a.warrantyMonths ? '未设置' : ''}</span>
+      </div>
+      ${expiry ? `<div class="detail-row"><span class="label">质保到期</span><span class="value">${formatDate(expiry.toISOString().split('T')[0])}</span></div>` : ''}
+      <div class="detail-row"><span class="label">保修状态</span><span class="value"><span class="warranty-badge ${ws.class}">${ws.text}</span></span></div>
+    </div>
+  `;
+
+  if (a.photos && a.photos.length > 0) {
+    html += `<div class="detail-section"><h3>家电照片 (${a.photos.length})</h3><div class="detail-images">${a.photos.map(p => `<img src="${p}" onclick="viewImage('${p}')">`).join('')}</div></div>`;
+  }
+  if (a.invoices && a.invoices.length > 0) {
+    html += `<div class="detail-section"><h3>购买发票 (${a.invoices.length})</h3><div class="detail-images">${a.invoices.map(f => f.type === 'image' ? `<img src="${f.data}" onclick="viewImage('${f.data}')">` : `<a class="file-link" href="${f.data}" download="${f.name}" onclick="event.stopPropagation()"><span class="file-link-icon">📄</span><span>${f.name}</span></a>`).join('')}</div></div>`;
+  }
+  if (a.manuals && a.manuals.length > 0) {
+    html += `<div class="detail-section"><h3>说明书 (${a.manuals.length})</h3><div class="detail-images">${a.manuals.map(f => f.type === 'image' ? `<img src="${f.data}" onclick="viewImage('${f.data}')">` : `<a class="file-link" href="${f.data}" download="${f.name}" onclick="event.stopPropagation()"><span class="file-link-icon">📄</span><span>${f.name}</span></a>`).join('')}</div></div>`;
+  }
+  if (a.notes) {
+    html += `<div class="detail-section"><h3>备注</h3><p style="font-size:14px; line-height:1.6; color:var(--text)">${a.notes}</p></div>`;
+  }
+
+  html += `
+    <button class="btn btn-outline" onclick="openEditModal(appliances.find(x=>x.id==='${a.id}'))">✏️ 编辑</button>
+    <button class="btn btn-danger" onclick="confirmDelete('${a.id}')">🗑️ 删除此家电</button>
+  `;
+  html += `</div>`;
+
+  document.getElementById('detailContent').innerHTML = html;
+  document.getElementById('detailEditBtn').onclick = () => openEditModal(a);
+  document.getElementById('detailPage').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detailPage').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ===== Image Viewer =====
+function viewImage(src) {
+  document.getElementById('viewerImage').src = src;
+  document.getElementById('imageViewer').classList.add('show');
+}
+function closeImageViewer() {
+  document.getElementById('imageViewer').classList.remove('show');
+}
+
+// ===== Stats =====
+function renderStats() {
+  const total = appliances.length;
+  const totalPrice = appliances.reduce((s, a) => s + (a.price || 0), 0);
+  const active = appliances.filter(a => getWarrantyStatus(a).status === 'active').length;
+  const expiring = appliances.filter(a => getWarrantyStatus(a).status === 'expiring').length;
+  const expired = appliances.filter(a => getWarrantyStatus(a).status === 'expired').length;
+
+  const categories = {};
+  appliances.forEach(a => { categories[a.category || '其他'] = (categories[a.category || '其他'] || 0) + 1; });
+
+  let html = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">家电总数</div></div>
+      <div class="stat-card"><div class="stat-value">¥${totalPrice >= 10000 ? (totalPrice/10000).toFixed(1) + '万' : totalPrice.toLocaleString()}</div><div class="stat-label">总价值</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--success)">${active}</div><div class="stat-label">保修中</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${expired + expiring}</div><div class="stat-label">已过保/即将到期</div></div>
+    </div>
+  `;
+
+  if (Object.keys(categories).length > 0) {
+    html += `<div class="detail-section"><h3>分类统计</h3>`;
+    Object.entries(categories).sort((a,b) => b[1]-a[1]).forEach(([cat, count]) => {
+      html += `<div class="detail-row"><span class="label">${getCategoryIcon(cat)} ${cat}</span><span class="value">${count} 件</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  const expiringItems = appliances
+    .filter(a => { const ws = getWarrantyStatus(a); return ws.status === 'active' || ws.status === 'expiring'; })
+    .sort((a, b) => (getWarrantyStatus(a).daysLeft || 999) - (getWarrantyStatus(b).daysLeft || 999))
+    .slice(0, 10);
+
+  if (expiringItems.length > 0) {
+    html += `<div class="warranty-list"><h3>⏰ 质保到期提醒</h3>`;
+    expiringItems.forEach(a => {
+      const ws = getWarrantyStatus(a);
+      html += `<div class="warranty-item" onclick="openDetail('${a.id}')"><div><div class="wi-name">${a.brand} ${a.name}</div><div class="wi-info">${formatDate(a.purchaseDate)} 购买</div></div><span class="warranty-badge ${ws.class}">${ws.text}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('statsContent').innerHTML = html;
+}
+
+// ===== Page Navigation =====
+function switchPage(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  const fab = document.getElementById('fabBtn');
+  if (page === 'home') {
+    document.getElementById('homePage').classList.add('show');
+    fab.style.display = 'flex';
+  } else if (page === 'stats') {
+    document.getElementById('statsPage').classList.add('show');
+    fab.style.display = 'none';
+    renderStats();
+  } else if (page === 'settings') {
+    document.getElementById('settingsPage').classList.add('show');
+    fab.style.display = 'none';
+  }
+}
+
+// ===== Export / Import =====
+function exportData() {
+  const data = JSON.stringify(appliances, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `家电管家_${currentUser.username}_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('导出成功 ✓');
+}
+
+async function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) throw new Error('格式错误');
+    for (const item of data) {
+      item.userId = currentUser.id;
+      if (!item.id) item.id = uuid();
+      await dbAddAppliance(item);
+    }
+    await loadData();
+    showToast(`成功导入 ${data.length} 条记录 ✓`);
+  } catch (e) {
+    showToast('导入失败，请检查文件格式');
+  }
+  event.target.value = '';
+}
+
+// ===== Init =====
+async function init() {
+  await openDB();
+  const session = getSession();
+  if (session) {
+    const user = await dbFindUser(session.username);
+    if (user && user.id === session.id) {
+      currentUser = user;
+      enterApp();
+      return;
+    }
+  }
+  // Show auth page
+  document.getElementById('authPage').classList.remove('hidden');
+}
+
+init();
+</script>
+</body>
+</html>
