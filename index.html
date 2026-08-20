@@ -402,8 +402,8 @@ body {
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-around;
-  padding: 8px 0;
-  padding-bottom: calc(8px + var(--safe-bottom));
+  padding: 12px 0;
+  padding-bottom: calc(12px + var(--safe-bottom));
   z-index: 100;
 }
 .nav-item {
@@ -421,7 +421,7 @@ body {
 }
 .nav-item.active { color: var(--primary); }
 .nav-item .nav-icon { font-size: 22px; }
-.nav-item .nav-label { font-size: 11px; font-weight: 500; }
+.nav-item .nav-label { font-size: 13px; font-weight: 500; }
 
 /* ===== Modal ===== */
 .modal-overlay {
@@ -1074,6 +1074,11 @@ body {
         <div class="upload-previews" id="photoPreviews"></div>
       </div>
 
+      <div class="form-group">
+        <label class="form-label">家电名称</label>
+        <input type="text" class="form-input" id="name" placeholder="如：客厅冰箱" required>
+      </div>
+
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">品牌</label>
@@ -1085,44 +1090,29 @@ body {
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">家电名称</label>
-        <input type="text" class="form-input" id="name" placeholder="如：客厅冰箱" required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">类别</label>
-        <select class="form-input" id="category">
-          <option value="大家电">大家电</option>
-          <option value="厨房电器">厨房电器</option>
-          <option value="生活电器">生活电器</option>
-          <option value="数码产品">数码产品</option>
-          <option value="其他">其他</option>
-        </select>
-      </div>
-
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">购买时间</label>
           <input type="date" class="form-input" id="purchaseDate">
         </div>
         <div class="form-group">
+          <label class="form-label">质保期限</label>
+          <div style="display:flex;gap:8px;">
+            <input type="number" class="form-input" id="warrantyYears" placeholder="年" min="0" style="flex:1">
+            <input type="number" class="form-input" id="warrantyMonths" placeholder="月" min="0" max="11" style="flex:1">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">购买渠道</label>
+          <input type="text" class="form-input" id="channel" placeholder="如：京东、天猫">
+        </div>
+        <div class="form-group">
           <label class="form-label">价格 (元)</label>
           <input type="number" class="form-input" id="price" placeholder="0.00" step="0.01" min="0">
         </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">质保期限</label>
-        <div class="form-row">
-          <input type="number" class="form-input" id="warrantyYears" placeholder="年" min="0">
-          <input type="number" class="form-input" id="warrantyMonths" placeholder="月" min="0" max="11">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">购买渠道</label>
-        <input type="text" class="form-input" id="channel" placeholder="如：京东、天猫、线下门店">
       </div>
 
       <div class="form-group">
@@ -1166,6 +1156,7 @@ body {
   <div id="detailContent"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 // ===== Database =====
 const DB_NAME = 'ApplianceManager';
@@ -1480,10 +1471,19 @@ async function handleManualUpload(event) {
   for (const file of files) {
     if (file.type === 'application/pdf') {
       const base64 = await fileToBase64(file);
-      tempManuals.push({ type: 'pdf', name: file.name, data: base64 });
+      tempManuals.push({ type: 'pdf', name: file.name, data: base64, text: '' });
     } else if (file.type.startsWith('image/')) {
       const compressed = await compressImage(file);
-      tempManuals.push({ type: 'image', name: file.name, data: compressed });
+      // OCR text extraction
+      let ocrText = '';
+      try {
+        showToast('正在识别说明书文字...');
+        const result = await Tesseract.recognize(compressed, 'chi_sim+eng');
+        ocrText = result.data.text;
+      } catch (e) {
+        console.log('OCR failed:', e);
+      }
+      tempManuals.push({ type: 'image', name: file.name, data: compressed, text: ocrText });
     }
   }
   renderManualPreviews();
@@ -1559,7 +1559,6 @@ function openEditModal(appliance) {
   document.getElementById('brand').value = appliance.brand || '';
   document.getElementById('model').value = appliance.model || '';
   document.getElementById('name').value = appliance.name || '';
-  document.getElementById('category').value = appliance.category || '大家电';
   document.getElementById('purchaseDate').value = appliance.purchaseDate || '';
   document.getElementById('price').value = appliance.price || '';
   document.getElementById('warrantyYears').value = appliance.warrantyYears || '';
@@ -1595,7 +1594,7 @@ async function saveAppliance(event) {
     brand: document.getElementById('brand').value.trim(),
     model: document.getElementById('model').value.trim(),
     name: document.getElementById('name').value.trim(),
-    category: document.getElementById('category').value,
+    category: '其他',
     purchaseDate: document.getElementById('purchaseDate').value,
     price: parseFloat(document.getElementById('price').value) || 0,
     warrantyYears: parseInt(document.getElementById('warrantyYears').value) || 0,
@@ -1663,7 +1662,6 @@ function renderList() {
   if (filtered.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-icon" style="font-size:48px;color:var(--text-light);margin-bottom:16px;">${search ? '—' : '—'}</div>
         <h3>${search ? '没有匹配结果' : '还没有添加家电'}</h3>
         <p>${search ? '试试其他关键词' : '点击右下角 + 按钮<br>开始记录你的第一件家电'}</p>
       </div>
@@ -1678,11 +1676,11 @@ function renderList() {
       <div class="appliance-card" onclick="openDetail('${a.id}')">
         ${photo
           ? `<img class="card-photo" src="${photo}">`
-          : `<div class="card-photo-placeholder"><span style="font-size:16px;color:white;font-weight:600">${a.category}</span></div>`
+          : `<div class="card-photo-placeholder"><span style="font-size:16px;color:white;font-weight:600">${a.brand}</span></div>`
         }
         <div class="card-info">
           <div class="card-name">${a.brand} ${a.name}</div>
-          <div class="card-model">${a.model || a.category}${a.channel ? ' · ' + a.channel : ''}</div>
+          <div class="card-model">${a.model || ''}${a.channel ? ' · ' + a.channel : ''}</div>
           <div class="card-meta">
             ${a.price ? `<span class="card-price">¥${a.price.toLocaleString()}</span>` : ''}
             <span class="warranty-badge ${ws.class}">${ws.text}</span>
@@ -1712,7 +1710,7 @@ function openDetail(id) {
   if (photo) {
     html += `<img class="detail-photo" src="${photo}" onclick="viewImage('${photo}')">`;
   } else {
-    html += `<div class="detail-photo-placeholder"><span style="font-size:24px;color:white;font-weight:600">${a.category}</span></div>`;
+    html += `<div class="detail-photo-placeholder"><span style="font-size:24px;color:white;font-weight:600">${a.brand}</span></div>`;
   }
 
   html += `<div class="detail-content">`;
@@ -1722,7 +1720,6 @@ function openDetail(id) {
       <div class="detail-row"><span class="label">名称</span><span class="value">${a.name}</span></div>
       <div class="detail-row"><span class="label">品牌</span><span class="value">${a.brand}</span></div>
       ${a.model ? `<div class="detail-row"><span class="label">型号</span><span class="value">${a.model}</span></div>` : ''}
-      <div class="detail-row"><span class="label">类别</span><span class="value">${a.category}</span></div>
       ${a.channel ? `<div class="detail-row"><span class="label">购买渠道</span><span class="value">${a.channel}</span></div>` : ''}
     </div>
   `;
@@ -1747,7 +1744,20 @@ function openDetail(id) {
     html += `<div class="detail-section"><h3>购买发票 (${a.invoices.length})</h3><div class="detail-images">${a.invoices.map(f => f.type === 'image' ? `<img src="${f.data}" onclick="viewImage('${f.data}')">` : `<a class="file-link" href="${f.data}" download="${f.name}" onclick="event.stopPropagation()"><span class="file-link-icon">📄</span><span>${f.name}</span></a>`).join('')}</div></div>`;
   }
   if (a.manuals && a.manuals.length > 0) {
-    html += `<div class="detail-section"><h3>说明书 (${a.manuals.length})</h3><div class="detail-images">${a.manuals.map(f => f.type === 'image' ? `<img src="${f.data}" onclick="viewImage('${f.data}')">` : `<a class="file-link" href="${f.data}" download="${f.name}" onclick="event.stopPropagation()"><span class="file-link-icon">📄</span><span>${f.name}</span></a>`).join('')}</div></div>`;
+    let manualHtml = `<div class="detail-section"><h3>说明书 (${a.manuals.length})</h3>`;
+    manualHtml += `<div style="margin-bottom:12px;"><input type="text" class="form-input" id="manualSearch" placeholder="搜索说明书内容..." oninput="searchManualText('${a.id}')" style="font-size:14px;padding:10px 12px;"></div>`;
+    manualHtml += `<div class="detail-images">${a.manuals.map((f, i) => {
+      if (f.type === 'image') {
+        return `<img src="${f.data}" onclick="viewImage('${f.data}')">`;
+      } else {
+        return `<a class="file-link" href="${f.data}" download="${f.name}" onclick="event.stopPropagation()"><span class="file-link-icon">📄</span><span>${f.name}</span></a>`;
+      }
+    }).join('')}</div>`;
+    // Show extracted text
+    const texts = a.manuals.filter(f => f.text).map((f, i) => `<div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:8px;font-size:13px;line-height:1.6;max-height:200px;overflow-y:auto;" id="manualText${i}"><strong>${f.name}</strong><br><span class="manual-text-content">${f.text}</span></div>`).join('');
+    if (texts) manualHtml += texts;
+    manualHtml += `</div>`;
+    html += manualHtml;
   }
   if (a.notes) {
     html += `<div class="detail-section"><h3>备注</h3><p style="font-size:14px; line-height:1.6; color:var(--text)">${a.notes}</p></div>`;
@@ -1760,9 +1770,32 @@ function openDetail(id) {
   html += `</div>`;
 
   document.getElementById('detailContent').innerHTML = html;
-  document.getElementById('detailEditBtn').onclick = () => openEditModal(a);
+  document.getElementById('detailEditBtn').onclick = () => {
+    closeDetail();
+    setTimeout(() => openEditModal(a), 300);
+  };
   document.getElementById('detailPage').classList.add('show');
   document.body.style.overflow = 'hidden';
+}
+
+function searchManualText(applianceId) {
+  const keyword = document.getElementById('manualSearch').value.toLowerCase();
+  const textElements = document.querySelectorAll('.manual-text-content');
+  textElements.forEach(el => {
+    const text = el.textContent;
+    if (!keyword) {
+      el.innerHTML = text;
+      el.parentElement.style.display = 'block';
+      return;
+    }
+    if (text.toLowerCase().includes(keyword)) {
+      const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      el.innerHTML = text.replace(regex, '<mark style="background:#FDCB6E;padding:1px 2px;border-radius:2px;">$1</mark>');
+      el.parentElement.style.display = 'block';
+    } else {
+      el.parentElement.style.display = 'none';
+    }
+  });
 }
 
 function closeDetail() {
@@ -1787,9 +1820,6 @@ function renderStats() {
   const expiring = appliances.filter(a => getWarrantyStatus(a).status === 'expiring').length;
   const expired = appliances.filter(a => getWarrantyStatus(a).status === 'expired').length;
 
-  const categories = {};
-  appliances.forEach(a => { categories[a.category || '其他'] = (categories[a.category || '其他'] || 0) + 1; });
-
   let html = `
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">家电总数</div></div>
@@ -1798,14 +1828,6 @@ function renderStats() {
       <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${expired + expiring}</div><div class="stat-label">已过保/即将到期</div></div>
     </div>
   `;
-
-  if (Object.keys(categories).length > 0) {
-    html += `<div class="detail-section"><h3>分类统计</h3>`;
-    Object.entries(categories).sort((a,b) => b[1]-a[1]).forEach(([cat, count]) => {
-      html += `<div class="detail-row"><span class="label">${cat}</span><span class="value">${count} 件</span></div>`;
-    });
-    html += `</div>`;
-  }
 
   const expiringItems = appliances
     .filter(a => { const ws = getWarrantyStatus(a); return ws.status === 'active' || ws.status === 'expiring'; })
