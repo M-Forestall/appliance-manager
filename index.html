@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="家电管家">
 <meta name="theme-color" content="#5B7B6F">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235B7B6F'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white'>🏠</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235B7B6F'/><text x='50' y='65' font-size='28' text-anchor='middle' fill='white' font-weight='bold' font-family='sans-serif'>家</text></svg>">
 <link rel="manifest" href="manifest.json">
 <title>家电管家</title>
 <style>
@@ -61,8 +61,11 @@ body {
 .auth-page.hidden { display: none; }
 
 .auth-logo {
-  font-size: 56px;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary);
   margin-bottom: 8px;
+  letter-spacing: 2px;
 }
 .auth-title {
   font-size: 28px;
@@ -231,7 +234,7 @@ body {
 }
 .search-bar input {
   width: 100%;
-  padding: 12px 16px 12px 42px;
+  padding: 12px 16px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 15px;
@@ -242,14 +245,6 @@ body {
 }
 .search-bar input:focus { border-color: var(--primary); }
 .search-bar input::placeholder { color: var(--text-light); }
-.search-bar .search-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  opacity: 0.4;
-}
 
 /* ===== Filter Tabs ===== */
 .filter-tabs {
@@ -916,8 +911,7 @@ body {
 
 <!-- ===== AUTH PAGE ===== -->
 <div class="auth-page" id="authPage">
-  <div class="auth-logo">🏠</div>
-  <div class="auth-title">家电管家</div>
+  <div class="auth-logo">家电管家</div>
   <div class="auth-subtitle">记录和管理你的家电信息</div>
 
   <div class="auth-card">
@@ -971,7 +965,7 @@ body {
   <div class="page show" id="homePage">
     <div class="header">
       <div class="header-inner">
-        <h1>🏠 家电管家</h1>
+        <h1> 家电管家</h1>
         <div class="header-right">
           <span class="header-stats" id="statsBadge">0 件</span>
         </div>
@@ -979,7 +973,6 @@ body {
     </div>
 
     <div class="search-bar">
-      <span class="search-icon">🔍</span>
       <input type="text" id="searchInput" placeholder="搜索品牌、型号..." oninput="renderList()">
     </div>
 
@@ -997,7 +990,7 @@ body {
   <div class="page" id="statsPage">
     <div class="header">
       <div class="header-inner">
-        <h1>📊 统计概览</h1>
+        <h1> 统计概览</h1>
       </div>
     </div>
     <div class="stats-page-inner" id="statsContent"></div>
@@ -1007,7 +1000,7 @@ body {
   <div class="page" id="settingsPage">
     <div class="header">
       <div class="header-inner">
-        <h1>⚙️ 设置</h1>
+        <h1> 设置</h1>
       </div>
     </div>
     <div class="settings-inner">
@@ -1021,8 +1014,8 @@ body {
       </div>
       <div class="detail-section">
         <h3>数据管理</h3>
-        <button class="btn btn-outline" onclick="exportData()" style="margin-top:0">📤 导出数据</button>
-        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" style="margin-top:10px">📥 导入数据</button>
+        <button class="btn btn-outline" onclick="exportData()" style="margin-top:0">导出数据</button>
+        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" style="margin-top:10px">导入数据</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
       </div>
       <div class="detail-section">
@@ -1033,30 +1026,27 @@ body {
       <div class="detail-section">
         <h3>使用提示</h3>
         <p style="font-size:13px; color:var(--text-secondary); line-height:1.8;">
-          💡 在 Safari 中打开此页面，点击分享按钮，选择"添加到主屏幕"，即可获得类似原生 APP 的体验。<br><br>
-          📸 所有照片和文件均存储在您的设备本地，不会上传到任何服务器。<br><br>
-          🔄 建议定期使用"导出数据"功能备份数据。清除浏览器数据会导致账号和记录丢失。<br><br>
-          🔑 请牢记您的账号密码，密码无法找回。
+          在 Safari 中打开此页面，点击分享按钮，选择"添加到主屏幕"，即可获得类似原生 APP 的体验。<br><br>
+          所有照片和文件均存储在您的设备本地，不会上传到任何服务器。<br><br>
+          建议定期使用"导出数据"功能备份数据。清除浏览器数据会导致账号和记录丢失。<br><br>
+          请牢记您的账号密码，密码无法找回。
         </p>
       </div>
     </div>
   </div>
 
   <!-- FAB -->
-  <button class="fab" id="fabBtn" onclick="openAddModal()">＋</button>
+  <button class="fab" id="fabBtn" onclick="openAddModal()">+</button>
 
   <!-- Bottom Nav -->
   <div class="bottom-nav">
     <button class="nav-item active" onclick="switchPage('home', this)">
-      <span class="nav-icon">🏠</span>
       <span class="nav-label">首页</span>
     </button>
     <button class="nav-item" onclick="switchPage('stats', this)">
-      <span class="nav-icon">📊</span>
       <span class="nav-label">统计</span>
     </button>
     <button class="nav-item" onclick="switchPage('settings', this)">
-      <span class="nav-icon">⚙️</span>
       <span class="nav-label">设置</span>
     </button>
   </div>
@@ -1077,7 +1067,6 @@ body {
       <div class="form-group">
         <label class="form-label">家电照片</label>
         <div class="upload-area" onclick="document.getElementById('photoInput').click()">
-          <div class="upload-icon">📷</div>
           <div class="upload-text">点击拍照或选择照片</div>
           <div class="upload-hint">支持 JPG、PNG 格式</div>
         </div>
@@ -1139,7 +1128,6 @@ body {
       <div class="form-group">
         <label class="form-label">购买发票</label>
         <div class="upload-area" onclick="document.getElementById('invoiceInput').click()">
-          <div class="upload-icon">🧾</div>
           <div class="upload-text">点击上传发票照片或文件</div>
           <div class="upload-hint">支持拍照、图片、PDF 等格式</div>
         </div>
@@ -1151,7 +1139,6 @@ body {
       <div class="form-group">
         <label class="form-label">说明书</label>
         <div class="upload-area" onclick="document.getElementById('manualInput').click()">
-          <div class="upload-icon">📖</div>
           <div class="upload-text">点击拍照扫描或选择文件</div>
           <div class="upload-hint">支持拍照扫描、图片、PDF 等格式</div>
         </div>
@@ -1339,8 +1326,7 @@ function getWarrantyExpiry(a) {
 }
 
 function getCategoryIcon(category) {
-  const icons = { '大家电': '🏠', '厨房电器': '🍳', '生活电器': '💨', '数码产品': '📱', '其他': '📦' };
-  return icons[category] || '📦';
+  return '';
 }
 
 // ===== Auth =====
@@ -1385,7 +1371,7 @@ async function doRegister() {
   setSession(user);
   currentUser = user;
   enterApp();
-  showToast('注册成功，欢迎使用 ✓');
+  showToast('注册成功，欢迎使用');
 }
 
 async function doLogin() {
@@ -1404,7 +1390,7 @@ async function doLogin() {
   setSession(user);
   currentUser = user;
   enterApp();
-  showToast(`欢迎回来，${user.username} ✓`);
+  showToast(`欢迎回来，${user.username} `);
 }
 
 function doLogout() {
@@ -1625,7 +1611,7 @@ async function saveAppliance(event) {
   await dbAddAppliance(data);
   await loadData();
   closeModal();
-  showToast(editId ? '修改成功 ✓' : '添加成功 ✓');
+  showToast(editId ? '修改成功' : '添加成功');
 }
 
 // ===== Delete =====
@@ -1677,9 +1663,9 @@ function renderList() {
   if (filtered.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-icon">${search ? '🔍' : '📦'}</div>
-        <h3>${search ? '没有找到匹配的结果' : '还没有添加家电'}</h3>
-        <p>${search ? '试试其他关键词' : '点击右下角 ＋ 按钮<br>开始记录你的第一件家电'}</p>
+        <div class="empty-icon" style="font-size:48px;color:var(--text-light);margin-bottom:16px;">${search ? '—' : '—'}</div>
+        <h3>${search ? '没有匹配结果' : '还没有添加家电'}</h3>
+        <p>${search ? '试试其他关键词' : '点击右下角 + 按钮<br>开始记录你的第一件家电'}</p>
       </div>
     `;
     return;
@@ -1692,7 +1678,7 @@ function renderList() {
       <div class="appliance-card" onclick="openDetail('${a.id}')">
         ${photo
           ? `<img class="card-photo" src="${photo}">`
-          : `<div class="card-photo-placeholder">${getCategoryIcon(a.category)}</div>`
+          : `<div class="card-photo-placeholder"><span style="font-size:16px;color:white;font-weight:600">${a.category}</span></div>`
         }
         <div class="card-info">
           <div class="card-name">${a.brand} ${a.name}</div>
@@ -1726,7 +1712,7 @@ function openDetail(id) {
   if (photo) {
     html += `<img class="detail-photo" src="${photo}" onclick="viewImage('${photo}')">`;
   } else {
-    html += `<div class="detail-photo-placeholder">${getCategoryIcon(a.category)}</div>`;
+    html += `<div class="detail-photo-placeholder"><span style="font-size:24px;color:white;font-weight:600">${a.category}</span></div>`;
   }
 
   html += `<div class="detail-content">`;
@@ -1768,8 +1754,8 @@ function openDetail(id) {
   }
 
   html += `
-    <button class="btn btn-outline" onclick="openEditModal(appliances.find(x=>x.id==='${a.id}'))">✏️ 编辑</button>
-    <button class="btn btn-danger" onclick="confirmDelete('${a.id}')">🗑️ 删除此家电</button>
+    <button class="btn btn-outline" onclick="openEditModal(appliances.find(x=>x.id==='${a.id}'))">编辑</button>
+    <button class="btn btn-danger" onclick="confirmDelete('${a.id}')">删除此家电</button>
   `;
   html += `</div>`;
 
@@ -1816,7 +1802,7 @@ function renderStats() {
   if (Object.keys(categories).length > 0) {
     html += `<div class="detail-section"><h3>分类统计</h3>`;
     Object.entries(categories).sort((a,b) => b[1]-a[1]).forEach(([cat, count]) => {
-      html += `<div class="detail-row"><span class="label">${getCategoryIcon(cat)} ${cat}</span><span class="value">${count} 件</span></div>`;
+      html += `<div class="detail-row"><span class="label">${cat}</span><span class="value">${count} 件</span></div>`;
     });
     html += `</div>`;
   }
@@ -1827,7 +1813,7 @@ function renderStats() {
     .slice(0, 10);
 
   if (expiringItems.length > 0) {
-    html += `<div class="warranty-list"><h3>⏰ 质保到期提醒</h3>`;
+    html += `<div class="warranty-list"><h3>质保到期提醒</h3>`;
     expiringItems.forEach(a => {
       const ws = getWarrantyStatus(a);
       html += `<div class="warranty-item" onclick="openDetail('${a.id}')"><div><div class="wi-name">${a.brand} ${a.name}</div><div class="wi-info">${formatDate(a.purchaseDate)} 购买</div></div><span class="warranty-badge ${ws.class}">${ws.text}</span></div>`;
@@ -1867,7 +1853,7 @@ function exportData() {
   a.download = `家电管家_${currentUser.username}_${new Date().toISOString().split('T')[0]}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast('导出成功 ✓');
+  showToast('导出成功');
 }
 
 async function importData(event) {
@@ -1883,7 +1869,7 @@ async function importData(event) {
       await dbAddAppliance(item);
     }
     await loadData();
-    showToast(`成功导入 ${data.length} 条记录 ✓`);
+    showToast(`成功导入 ${data.length} 条记录 `);
   } catch (e) {
     showToast('导入失败，请检查文件格式');
   }
