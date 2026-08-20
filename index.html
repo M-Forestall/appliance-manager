@@ -290,11 +290,44 @@ body {
   display: flex;
   gap: 14px;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s;
   position: relative;
   overflow: hidden;
+  touch-action: pan-y;
 }
 .appliance-card:active { transform: scale(0.98); }
+.appliance-card .card-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  z-index: 5;
+}
+.appliance-card.swiped .card-actions {
+  transform: translateX(0);
+}
+.appliance-card .card-actions button {
+  height: 100%;
+  padding: 0 20px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.appliance-card .card-actions .act-edit {
+  background: var(--primary);
+}
+.appliance-card .card-actions .act-delete {
+  background: var(--danger);
+}
 .appliance-card .card-photo {
   width: 80px;
   height: 80px;
@@ -428,7 +461,7 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.4);
-  z-index: 200;
+  z-index: 340;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
@@ -443,7 +476,7 @@ body {
   max-height: 92vh;
   background: var(--bg);
   border-radius: 20px 20px 0 0;
-  z-index: 201;
+  z-index: 350;
   transform: translateY(100%);
   transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
   overflow-y: auto;
@@ -1660,7 +1693,7 @@ function renderList() {
     const ws = getWarrantyStatus(a);
     const photo = a.photos && a.photos.length > 0 ? a.photos[0] : null;
     return `
-      <div class="appliance-card" onclick="openDetail('${a.id}')">
+      <div class="appliance-card" data-id="${a.id}" ontouchstart="handleTouchStart(event, this)" ontouchmove="handleTouchMove(event, this)" ontouchend="handleTouchEnd(event, this)">
         ${photo
           ? `<img class="card-photo" src="${photo}">`
           : `<div class="card-photo-placeholder"><span style="font-size:16px;color:white;font-weight:600">${a.brand}</span></div>`
@@ -1672,6 +1705,10 @@ function renderList() {
             ${a.price ? `<span class="card-price">¥${a.price.toLocaleString()}</span>` : ''}
             <span class="warranty-badge ${ws.class}">${ws.text}</span>
           </div>
+        </div>
+        <div class="card-actions">
+          <button class="act-edit" onclick="event.stopPropagation(); openEditModal(appliances.find(x=>x.id==='${a.id}'))">编辑</button>
+          <button class="act-delete" onclick="event.stopPropagation(); confirmDelete('${a.id}')">删除</button>
         </div>
       </div>
     `;
@@ -1734,14 +1771,20 @@ function openDetail(id) {
   }
   if (a.manuals && a.manuals.length > 0) {
     let manualHtml = `<div class="detail-section"><h3>说明书 (${a.manuals.length})</h3>`;
-    manualHtml += `<div style="margin-bottom:12px;"><input type="text" class="form-input" id="manualSearch" placeholder="搜索说明书内容..." oninput="searchManualText('${a.id}')" style="font-size:14px;padding:10px 12px;"></div>`;
+    manualHtml += `<div style="margin-bottom:12px;"><input type="text" class="form-input" id="manualSearch" placeholder="搜索说明书内容..." oninput="searchManualText()" style="font-size:14px;padding:10px 12px;"></div>`;
     manualHtml += `<div class="detail-images">${a.manuals.map((f, i) => {
       if (f.type === 'image') {
-        return `<img src="${f.data}" onclick="viewImage('${f.data}')">`;
+        const textAttr = f.text ? f.text.replace(/"/g, '&quot;').replace(/\n/g, ' ') : '';
+        return `<img src="${f.data}" data-manual-text="${textAttr}" data-manual-name="${f.name}" onclick="viewImage('${f.data}')" style="position:relative;">`;
       } else {
         return `<a class="file-link" href="${f.data}" download="${f.name}" onclick="event.stopPropagation()"><span class="file-link-icon">📄</span><span>${f.name}</span></a>`;
       }
     }).join('')}</div>`;
+    // Hidden searchable text
+    a.manuals.filter(f => f.text && f.type === 'image').forEach((f, i) => {
+      manualHtml += `<div class="manual-searchable" data-name="${f.name}" style="display:none;">${f.text}</div>`;
+    });
+    manualHtml += `<div id="manualSearchResults" style="margin-top:12px;"></div>`;
     manualHtml += `</div>`;
     html += manualHtml;
   }
@@ -1751,37 +1794,88 @@ function openDetail(id) {
 
   html += `
     <button class="btn btn-outline" onclick="openEditModal(appliances.find(x=>x.id==='${a.id}'))">编辑</button>
-    <button class="btn btn-danger" onclick="confirmDelete('${a.id}')">删除此家电</button>
   `;
   html += `</div>`;
 
   document.getElementById('detailContent').innerHTML = html;
-  document.getElementById('detailEditBtn').onclick = () => {
-    closeDetail();
-    setTimeout(() => openEditModal(a), 300);
-  };
+  document.getElementById('detailEditBtn').onclick = () => openEditModal(a);
   document.getElementById('detailPage').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
 
-function searchManualText(applianceId) {
-  const keyword = document.getElementById('manualSearch').value.toLowerCase();
-  const textElements = document.querySelectorAll('.manual-text-content');
-  textElements.forEach(el => {
+// ===== Swipe handlers =====
+let touchStartX = 0;
+let touchCurrentCard = null;
+
+function handleTouchStart(e, card) {
+  touchStartX = e.touches[0].clientX;
+  touchCurrentCard = card;
+  // Close other swiped cards
+  document.querySelectorAll('.appliance-card.swiped').forEach(c => {
+    if (c !== card) c.classList.remove('swiped');
+  });
+}
+
+function handleTouchMove(e, card) {
+  // Let the browser handle vertical scroll
+}
+
+function handleTouchEnd(e, card) {
+  const touchEndX = e.changedTouches[0].clientX;
+  const diff = touchStartX - touchEndX;
+  if (diff > 60) {
+    card.classList.add('swiped');
+  } else if (diff < -60) {
+    card.classList.remove('swiped');
+  } else if (Math.abs(diff) < 10) {
+    // Tap - open detail
+    const id = card.dataset.id;
+    openDetail(id);
+  }
+}
+
+// Close swiped card when tapping elsewhere
+document.addEventListener('touchstart', (e) => {
+  if (!e.target.closest('.appliance-card')) {
+    document.querySelectorAll('.appliance-card.swiped').forEach(c => c.classList.remove('swiped'));
+  }
+});
+
+function searchManualText() {
+  const keyword = document.getElementById('manualSearch').value.trim().toLowerCase();
+  const resultsDiv = document.getElementById('manualSearchResults');
+  const searchables = document.querySelectorAll('.manual-searchable');
+  const images = document.querySelectorAll('.detail-images img[data-manual-text]');
+  
+  if (!keyword) {
+    resultsDiv.innerHTML = '';
+    images.forEach(img => img.style.outline = '');
+    return;
+  }
+  
+  let resultsHtml = '';
+  images.forEach(img => img.style.outline = '');
+  
+  searchables.forEach((el, idx) => {
     const text = el.textContent;
-    if (!keyword) {
-      el.innerHTML = text;
-      el.parentElement.style.display = 'block';
-      return;
-    }
+    const name = el.dataset.name;
     if (text.toLowerCase().includes(keyword)) {
-      const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-      el.innerHTML = text.replace(regex, '<mark style="background:#FDCB6E;padding:1px 2px;border-radius:2px;">$1</mark>');
-      el.parentElement.style.display = 'block';
-    } else {
-      el.parentElement.style.display = 'none';
+      // Highlight matching image
+      if (images[idx]) images[idx].style.outline = '3px solid var(--warning)';
+      
+      // Find and show context around keyword
+      const lowerText = text.toLowerCase();
+      const pos = lowerText.indexOf(keyword);
+      const start = Math.max(0, pos - 40);
+      const end = Math.min(text.length, pos + keyword.length + 40);
+      const context = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '');
+      const highlighted = context.replace(new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<mark style="background:#FDCB6E;padding:1px 2px;border-radius:2px;">$1</mark>');
+      
+      resultsHtml += `<div style="padding:10px 12px;background:var(--bg);border-radius:8px;margin-bottom:8px;font-size:13px;line-height:1.6;"><strong style="color:var(--primary);">${name}</strong><br><span style="color:var(--text-secondary);">${highlighted}</span></div>`;
     }
   });
+  
+  resultsDiv.innerHTML = resultsHtml || '<div style="padding:10px;color:var(--text-light);font-size:13px;">没有找到匹配内容</div>';
 }
 
 function closeDetail() {
