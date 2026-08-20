@@ -981,6 +981,7 @@ body {
       <div class="filter-tab" data-filter="active" onclick="setFilter('active', this)">保修中</div>
       <div class="filter-tab" data-filter="expiring" onclick="setFilter('expiring', this)">即将到期</div>
       <div class="filter-tab" data-filter="expired" onclick="setFilter('expired', this)">已过保</div>
+      <div class="filter-tab" data-filter="no-warranty" onclick="setFilter('no-warranty', this)">无质保</div>
     </div>
 
     <div class="appliance-list" id="applianceList"></div>
@@ -1096,11 +1097,8 @@ body {
           <input type="date" class="form-input" id="purchaseDate">
         </div>
         <div class="form-group">
-          <label class="form-label">质保期限</label>
-          <div style="display:flex;gap:8px;">
-            <input type="number" class="form-input" id="warrantyYears" placeholder="年" min="0" style="flex:1">
-            <input type="number" class="form-input" id="warrantyMonths" placeholder="月" min="0" max="11" style="flex:1">
-          </div>
+          <label class="form-label">质保到期</label>
+          <input type="date" class="form-input" id="warrantyExpiry">
         </div>
       </div>
 
@@ -1291,29 +1289,20 @@ function formatDate(dateStr) {
 }
 
 function getWarrantyStatus(a) {
-  if (!a.purchaseDate || (!a.warrantyYears && !a.warrantyMonths)) {
-    return { status: 'unknown', text: '未设置质保', class: '', daysLeft: 9999 };
+  if (!a.warrantyExpiry) {
+    return { status: 'no-warranty', text: '无质保', class: '', daysLeft: 9999 };
   }
-  const purchase = new Date(a.purchaseDate);
-  const years = a.warrantyYears || 0;
-  const months = a.warrantyMonths || 0;
-  const expiry = new Date(purchase);
-  expiry.setFullYear(expiry.getFullYear() + years);
-  expiry.setMonth(expiry.getMonth() + months);
+  const expiry = new Date(a.warrantyExpiry);
   const now = new Date();
   const daysLeft = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
   if (daysLeft < 0) return { status: 'expired', text: '已过保', class: 'warranty-expired', daysLeft };
-  if (daysLeft <= 30) return { status: 'expiring', text: `${daysLeft}天后到期`, class: 'warranty-warning', daysLeft };
+  if (daysLeft <= 90) return { status: 'expiring', text: `${daysLeft}天后到期`, class: 'warranty-warning', daysLeft };
   return { status: 'active', text: `保修中 (${daysLeft}天)`, class: 'warranty-active', daysLeft };
 }
 
 function getWarrantyExpiry(a) {
-  if (!a.purchaseDate || (!a.warrantyYears && !a.warrantyMonths)) return null;
-  const purchase = new Date(a.purchaseDate);
-  const expiry = new Date(purchase);
-  expiry.setFullYear(expiry.getFullYear() + (a.warrantyYears || 0));
-  expiry.setMonth(expiry.getMonth() + (a.warrantyMonths || 0));
-  return expiry;
+  if (!a.warrantyExpiry) return null;
+  return new Date(a.warrantyExpiry);
 }
 
 function getCategoryIcon(category) {
@@ -1560,9 +1549,8 @@ function openEditModal(appliance) {
   document.getElementById('model').value = appliance.model || '';
   document.getElementById('name').value = appliance.name || '';
   document.getElementById('purchaseDate').value = appliance.purchaseDate || '';
+  document.getElementById('warrantyExpiry').value = appliance.warrantyExpiry || '';
   document.getElementById('price').value = appliance.price || '';
-  document.getElementById('warrantyYears').value = appliance.warrantyYears || '';
-  document.getElementById('warrantyMonths').value = appliance.warrantyMonths || '';
   document.getElementById('channel').value = appliance.channel || '';
   document.getElementById('notes').value = appliance.notes || '';
   tempPhotos = [...(appliance.photos || [])];
@@ -1596,9 +1584,8 @@ async function saveAppliance(event) {
     name: document.getElementById('name').value.trim(),
     category: '其他',
     purchaseDate: document.getElementById('purchaseDate').value,
+    warrantyExpiry: document.getElementById('warrantyExpiry').value,
     price: parseFloat(document.getElementById('price').value) || 0,
-    warrantyYears: parseInt(document.getElementById('warrantyYears').value) || 0,
-    warrantyMonths: parseInt(document.getElementById('warrantyMonths').value) || 0,
     channel: document.getElementById('channel').value.trim(),
     notes: document.getElementById('notes').value.trim(),
     photos: [...tempPhotos],
@@ -1645,14 +1632,14 @@ function renderList() {
     const matchSearch = !search ||
       a.name.toLowerCase().includes(search) ||
       a.brand.toLowerCase().includes(search) ||
-      (a.model && a.model.toLowerCase().includes(search)) ||
-      (a.category && a.category.toLowerCase().includes(search));
+      (a.model && a.model.toLowerCase().includes(search));
     if (!matchSearch) return false;
     if (currentFilter === 'all') return true;
     const ws = getWarrantyStatus(a);
     if (currentFilter === 'active') return ws.status === 'active';
     if (currentFilter === 'expiring') return ws.status === 'expiring';
     if (currentFilter === 'expired') return ws.status === 'expired';
+    if (currentFilter === 'no-warranty') return ws.status === 'no-warranty';
     return true;
   });
 
@@ -1695,6 +1682,9 @@ function setFilter(filter, el) {
   currentFilter = filter;
   document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
+  // FAB only shows on 'all' filter
+  const fab = document.getElementById('fabBtn');
+  fab.style.display = filter === 'all' ? 'flex' : 'none';
   renderList();
 }
 
@@ -1729,10 +1719,9 @@ function openDetail(id) {
       <div class="detail-row"><span class="label">购买时间</span><span class="value">${formatDate(a.purchaseDate)}</span></div>
       ${a.price ? `<div class="detail-row"><span class="label">价格</span><span class="value" style="color:var(--accent);font-weight:600">¥${a.price.toLocaleString()}</span></div>` : ''}
       <div class="detail-row">
-        <span class="label">质保期限</span>
-        <span class="value">${a.warrantyYears ? a.warrantyYears + '年' : ''}${a.warrantyMonths ? a.warrantyMonths + '个月' : ''}${!a.warrantyYears && !a.warrantyMonths ? '未设置' : ''}</span>
+        <span class="label">质保到期</span>
+        <span class="value">${a.warrantyExpiry ? formatDate(a.warrantyExpiry) : '未设置'}</span>
       </div>
-      ${expiry ? `<div class="detail-row"><span class="label">质保到期</span><span class="value">${formatDate(expiry.toISOString().split('T')[0])}</span></div>` : ''}
       <div class="detail-row"><span class="label">保修状态</span><span class="value"><span class="warranty-badge ${ws.class}">${ws.text}</span></span></div>
     </div>
   `;
@@ -1753,9 +1742,6 @@ function openDetail(id) {
         return `<a class="file-link" href="${f.data}" download="${f.name}" onclick="event.stopPropagation()"><span class="file-link-icon">📄</span><span>${f.name}</span></a>`;
       }
     }).join('')}</div>`;
-    // Show extracted text
-    const texts = a.manuals.filter(f => f.text).map((f, i) => `<div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:8px;font-size:13px;line-height:1.6;max-height:200px;overflow-y:auto;" id="manualText${i}"><strong>${f.name}</strong><br><span class="manual-text-content">${f.text}</span></div>`).join('');
-    if (texts) manualHtml += texts;
     manualHtml += `</div>`;
     html += manualHtml;
   }
@@ -1819,13 +1805,16 @@ function renderStats() {
   const active = appliances.filter(a => getWarrantyStatus(a).status === 'active').length;
   const expiring = appliances.filter(a => getWarrantyStatus(a).status === 'expiring').length;
   const expired = appliances.filter(a => getWarrantyStatus(a).status === 'expired').length;
+  const noWarranty = appliances.filter(a => getWarrantyStatus(a).status === 'no-warranty').length;
 
   let html = `
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">家电总数</div></div>
       <div class="stat-card"><div class="stat-value">¥${totalPrice >= 10000 ? (totalPrice/10000).toFixed(1) + '万' : totalPrice.toLocaleString()}</div><div class="stat-label">总价值</div></div>
       <div class="stat-card"><div class="stat-value" style="color:var(--success)">${active}</div><div class="stat-label">保修中</div></div>
-      <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${expired + expiring}</div><div class="stat-label">已过保/即将到期</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--warning)">${expiring}</div><div class="stat-label">即将到期</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${expired}</div><div class="stat-label">已过保</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--text-light)">${noWarranty}</div><div class="stat-label">无质保</div></div>
     </div>
   `;
 
@@ -1854,7 +1843,7 @@ function switchPage(page, el) {
   const fab = document.getElementById('fabBtn');
   if (page === 'home') {
     document.getElementById('homePage').classList.add('show');
-    fab.style.display = 'flex';
+    fab.style.display = currentFilter === 'all' ? 'flex' : 'none';
   } else if (page === 'stats') {
     document.getElementById('statsPage').classList.add('show');
     fab.style.display = 'none';
