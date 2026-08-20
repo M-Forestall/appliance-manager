@@ -1706,8 +1706,8 @@ function renderList() {
           </div>
         </div>
         <div class="card-actions">
-          <button class="act-edit" onclick="event.stopPropagation(); openEditModal(appliances.find(x=>x.id==='${a.id}'))">编辑</button>
-          <button class="act-delete" onclick="event.stopPropagation(); confirmDelete('${a.id}')">删除</button>
+          <button class="act-edit" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation(); event.preventDefault(); openEditModal(appliances.find(x=>x.id==='${a.id}'))" onclick="event.stopPropagation(); openEditModal(appliances.find(x=>x.id==='${a.id}'))">编辑</button>
+          <button class="act-delete" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation(); event.preventDefault(); confirmDelete('${a.id}')" onclick="event.stopPropagation(); confirmDelete('${a.id}')">删除</button>
         </div>
       </div>
     `;
